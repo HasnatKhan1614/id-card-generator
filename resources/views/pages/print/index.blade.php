@@ -6,10 +6,11 @@
         <div class="row mb-2">
             <div class="col-sm-8">
                 <h1>Print ID Cards</h1>
-                <p class="text-muted mb-0">Select registered students, then print student or parent cards.</p>
+                <p class="text-muted mb-0">Pick a template, select students, then print student or parent cards.</p>
             </div>
             <div class="col-sm-4 text-right">
-                <a href="{{ route('registrations.index') }}" class="btn btn-outline-secondary btn-sm">Manage registrations</a>
+                <a href="{{ route('templates.index') }}" class="btn btn-outline-primary btn-sm">Manage templates</a>
+                <a href="{{ route('registrations.index') }}" class="btn btn-outline-secondary btn-sm">Registrations</a>
             </div>
         </div>
 
@@ -22,6 +23,18 @@
             <div class="card-body">
                 <form method="GET" action="{{ route('print.index') }}" class="row align-items-end">
                     <div class="col-md-3 form-group">
+                        <label>Template</label>
+                        <select name="template_id" class="form-control" id="filter-template">
+                            @forelse ($templates as $template)
+                                <option value="{{ $template->id }}" @selected((int) ($selectedTemplateId ?? 0) === $template->id)>
+                                    {{ $template->name }}{{ $template->is_default ? ' (default)' : '' }}
+                                </option>
+                            @empty
+                                <option value="">No templates — create one first</option>
+                            @endforelse
+                        </select>
+                    </div>
+                    <div class="col-md-2 form-group">
                         <label>Campus</label>
                         <select name="campus" class="form-control">
                             <option value="">All campuses</option>
@@ -30,7 +43,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3 form-group">
+                    <div class="col-md-2 form-group">
                         <label>Class</label>
                         <select name="class" class="form-control">
                             <option value="">All classes</option>
@@ -39,7 +52,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-4 form-group">
+                    <div class="col-md-3 form-group">
                         <label>Search</label>
                         <input type="text" name="q" class="form-control" value="{{ $filters['q'] ?? '' }}" placeholder="ID or name">
                     </div>
@@ -53,6 +66,7 @@
         <form id="bulk-print-form" method="POST" action="{{ route('print.cards') }}" target="_blank">
             @csrf
             <input type="hidden" name="type" id="print-type" value="student">
+            <input type="hidden" name="template_id" id="print-template-id" value="{{ $selectedTemplateId }}">
 
             <div class="card">
                 <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
@@ -103,10 +117,10 @@
                                         <td>{{ $student->campus }}</td>
                                         <td>{{ $student->father_name ?: '—' }}</td>
                                         <td class="text-right text-nowrap">
-                                            <a href="{{ route('print.single', [$student->id, 'student']) }}" target="_blank" class="btn btn-sm btn-outline-success" title="Student ID">
+                                            <a href="{{ route('print.single', [$student->id, 'student']) }}?template_id={{ $selectedTemplateId }}" target="_blank" class="btn btn-sm btn-outline-success quick-print" title="Student ID">
                                                 <i class="fas fa-id-card"></i>
                                             </a>
-                                            <a href="{{ route('print.single', [$student->id, 'parent']) }}" target="_blank" class="btn btn-sm btn-outline-info" title="Parent ID">
+                                            <a href="{{ route('print.single', [$student->id, 'parent']) }}?template_id={{ $selectedTemplateId }}" target="_blank" class="btn btn-sm btn-outline-info quick-print" title="Parent ID">
                                                 <i class="fas fa-user-friends"></i>
                                             </a>
                                         </td>
@@ -143,6 +157,23 @@
         const errorEl = document.getElementById('print-error');
         const form = document.getElementById('bulk-print-form');
         const typeInput = document.getElementById('print-type');
+        const templateInput = document.getElementById('print-template-id');
+        const filterTemplate = document.getElementById('filter-template');
+
+        function syncTemplate() {
+            if (filterTemplate && templateInput) {
+                templateInput.value = filterTemplate.value;
+            }
+            document.querySelectorAll('.quick-print').forEach(function (link) {
+                const url = new URL(link.href);
+                url.searchParams.set('template_id', filterTemplate ? filterTemplate.value : '');
+                link.href = url.toString();
+            });
+        }
+
+        if (filterTemplate) {
+            filterTemplate.addEventListener('change', syncTemplate);
+        }
 
         function refreshCount() {
             const n = document.querySelectorAll('.student-id:checked').length;
@@ -168,7 +199,13 @@
                     errorEl.classList.remove('d-none');
                     return;
                 }
+                if (!templateInput.value) {
+                    errorEl.textContent = 'Create an ID card template before printing.';
+                    errorEl.classList.remove('d-none');
+                    return;
+                }
                 errorEl.classList.add('d-none');
+                syncTemplate();
                 typeInput.value = btn.getAttribute('data-print-type');
                 form.submit();
             });

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CampusController;
+use App\Http\Controllers\IdCardTemplateController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\SchoolClassController;
@@ -51,6 +52,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('print/{student}/{type}', [PrintController::class, 'single'])
         ->whereIn('type', ['student', 'parent'])
         ->name('print.single');
+
+    // ID card templates
+    Route::get('templates', [IdCardTemplateController::class, 'index'])->name('templates.index');
+    Route::get('templates/create', [IdCardTemplateController::class, 'create'])->name('templates.create');
+    Route::post('templates', [IdCardTemplateController::class, 'store'])->name('templates.store');
+    Route::get('templates/{id}/edit', [IdCardTemplateController::class, 'edit'])->name('templates.edit');
+    Route::put('templates/{id}', [IdCardTemplateController::class, 'update'])->name('templates.update');
+    Route::delete('templates/{id}', [IdCardTemplateController::class, 'destroy'])->name('templates.destroy');
+    Route::post('templates/{id}/default', [IdCardTemplateController::class, 'setDefault'])->name('templates.default');
+    Route::get('templates/{id}/preview', [IdCardTemplateController::class, 'preview'])->name('templates.preview');
 
     // Campuses
     Route::get('campuses', [CampusController::class, 'index'])->name('campuses.index');

@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             CampusSeeder::class,
             SchoolClassSeeder::class,
+            IdCardTemplateSeeder::class,
             StudentSeeder::class,
         ]);
     }

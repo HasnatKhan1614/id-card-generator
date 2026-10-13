@@ -3,9 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ ($type ?? 'student') === 'parent' ? 'Parent' : 'Student' }} ID Cards</title>
+    <title>
+        {{ ($preview ?? false) ? 'Template Preview — ' : '' }}
+        {{ ($type ?? 'student') === 'parent' ? 'Parent' : 'Student' }} ID Cards
+        @isset($template) — {{ $template->name }} @endisset
+    </title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-    @include('cards.styles')
+    @include('cards.styles', ['template' => $template ?? null])
     <style>
         body {
             font-family: "Source Sans Pro", "Segoe UI", Tahoma, sans-serif;
@@ -30,7 +34,6 @@
             font-size: 1.2rem;
             font-weight: 700;
             margin: 0 0 4px;
-            color: #343a40;
         }
 
         .toolbar .hint {
@@ -113,25 +116,42 @@
     <div class="toolbar">
         <div>
             <h1>
-                {{ ($type ?? 'student') === 'parent' ? 'Parent / Guardian' : 'Student' }}
-                ID Cards ({{ $students->count() }})
+                @if ($preview ?? false)
+                    Preview: {{ $template->name ?? 'Template' }}
+                @else
+                    {{ ($type ?? 'student') === 'parent' ? 'Parent / Guardian' : 'Student' }}
+                    ID Cards ({{ $students->count() }})
+                @endif
             </h1>
-            <p class="hint">3.370 × 2.125 in · 8 cards per A4 page</p>
+            <p class="hint">
+                @isset($template)
+                    Template: <strong>{{ $template->name }}</strong> ·
+                @endisset
+                3.370 × 2.125 in · 8 cards per A4 page
+            </p>
         </div>
         <div class="actions">
-            <a href="{{ route('print.index') }}">Back</a>
+            @if ($preview ?? false)
+                <a href="{{ route('templates.index') }}">Back to templates</a>
+            @else
+                <a href="{{ route('print.index') }}">Back</a>
+            @endif
             <button type="button" onclick="window.print()">Print</button>
         </div>
     </div>
 
     <div class="sheet">
         @foreach ($students as $student)
-            @include('cards.id-card', ['student' => $student, 'type' => $type ?? 'student'])
+            @include('cards.id-card', [
+                'student' => $student,
+                'type' => $type ?? 'student',
+                'template' => $template ?? null,
+            ])
         @endforeach
     </div>
 
     <script>
-        @if ($students->count() === 1)
+        @if (!($preview ?? false) && $students->count() === 1)
             window.addEventListener('load', function () {
                 setTimeout(function () { window.print(); }, 350);
             });

@@ -103,9 +103,10 @@
                 <div class="card card-outline card-primary">
                     <div class="card-header"><h3 class="card-title">3. Print IDs</h3></div>
                     <div class="card-body">
-                        Print student or parent ID cards from one place.
+                        Choose a template, then print student or parent ID cards.
                         <div class="mt-3">
                             <a href="{{ route('print.index') }}" class="btn btn-sm btn-success"><i class="fas fa-print"></i> Print hub</a>
+                            <a href="{{ route('templates.index') }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-palette"></i> Templates</a>
                         </div>
                     </div>
                 </div>

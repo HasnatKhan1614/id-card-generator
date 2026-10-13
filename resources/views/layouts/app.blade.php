@@ -245,6 +245,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="{{ route('templates.index') }}" class="nav-link {{ request()->routeIs('templates.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-palette"></i>
+                                <p>ID Templates</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="{{ route('campuses.index') }}" class="nav-link {{ request()->routeIs('campuses.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-building"></i>
                                 <p>Campuses</p>
